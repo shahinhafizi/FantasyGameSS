@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using Godot;
@@ -55,7 +56,6 @@ public partial class KnightController : CharacterBody2D
         _attackHitbox.BodyEntered += OnAttackHitboxBodyEntered;
         _attackHitbox.Monitoring = false;
         AddToGroup("Player");
-        AddToGroup("player");
     }
 
     public override void _PhysicsProcess(double delta)
@@ -74,15 +74,7 @@ public partial class KnightController : CharacterBody2D
             }
         }
 
-        if (!IsOnFloor())
-        {
-            Velocity += Vector2.Down * Gravity * (float)delta;
-        }
-        else if (Velocity.Y > 0.0f)
-        {
-            Velocity = new Vector2(Velocity.X, 0.0f);
-        }
-
+        PlatformerMotion.ApplyGravity(this, Gravity, delta);
         MoveAndSlide();
     }
 
@@ -200,12 +192,8 @@ public partial class KnightController : CharacterBody2D
         SetAttackActive(false);
         Velocity = Vector2.Zero;
         _stateMachine.SetProcess(false);
-        _stateMachine.SetPhysicsProcess(false);
         SetPhysicsProcess(false);
-
-        SetDeferred(CollisionObject2D.PropertyName.CollisionLayer, 0);
-        SetDeferred(CollisionObject2D.PropertyName.CollisionMask, 0);
-        DisableCollisionsRecursively(this);
+        CollisionDisabler.DisableBody(this);
         _animatedSprite.SpriteFrames!.SetAnimationLoopMode(
             new StringName("death"),
             SpriteFrames.LoopMode.None);
@@ -222,38 +210,13 @@ public partial class KnightController : CharacterBody2D
         }
 
         _deathSequenceFinished = true;
-        Godot.Collections.Array<Node> gameOverScreens = GetTree().GetNodesInGroup("GameOverUI");
-        if (gameOverScreens.Count > 0
-            && gameOverScreens[0] is GameOverScreen gameOverScreen)
+        GameOverScreen? gameOverScreen = GameOverScreen.Find(GetTree());
+        if (gameOverScreen is not null)
         {
             gameOverScreen.ShowGameOver();
             return;
         }
 
         GD.PushError("No GameOverScreen was found; the player remains dead.");
-    }
-
-    private void DisableCollisionsRecursively(Node node)
-    {
-        foreach (Node child in node.GetChildren())
-        {
-            if (child is CollisionShape2D collisionShape)
-            {
-                collisionShape.SetDeferred(CollisionShape2D.PropertyName.Disabled, true);
-            }
-            else if (child is CollisionPolygon2D collisionPolygon)
-            {
-                collisionPolygon.SetDeferred(CollisionPolygon2D.PropertyName.Disabled, true);
-            }
-            else if (child is Area2D area)
-            {
-                area.SetDeferred(Area2D.PropertyName.Monitoring, false);
-                area.SetDeferred(Area2D.PropertyName.Monitorable, false);
-                area.SetDeferred(CollisionObject2D.PropertyName.CollisionLayer, 0);
-                area.SetDeferred(CollisionObject2D.PropertyName.CollisionMask, 0);
-            }
-
-            DisableCollisionsRecursively(child);
-        }
     }
 }

@@ -1,3 +1,4 @@
+#nullable enable
 using Godot;
 
 public partial class GameOverScreen : CanvasLayer
@@ -6,6 +7,19 @@ public partial class GameOverScreen : CanvasLayer
     private Label _resultLabel = null!;
     private Button _restartButton = null!;
     private bool _isShown;
+
+    public static GameOverScreen? Find(SceneTree tree)
+    {
+        foreach (Node node in tree.GetNodesInGroup("GameOverUI"))
+        {
+            if (node is GameOverScreen screen)
+            {
+                return screen;
+            }
+        }
+
+        return null;
+    }
 
     public override void _Ready()
     {
