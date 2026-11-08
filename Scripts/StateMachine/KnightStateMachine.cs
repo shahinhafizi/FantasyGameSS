@@ -21,7 +21,7 @@ public partial class KnightStateMachine : Node
                                    ?? throw new InvalidOperationException(
                                        $"No KnightState was found at '{InitialStatePath}'.");
 
-        TransitionTo(initialState);
+        CallDeferred(MethodName.TransitionTo, initialState);
     }
 
     public override void _Process(double delta)

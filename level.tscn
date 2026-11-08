@@ -813,11 +813,11 @@ tile_map_data = PackedByteArray("AACZ+x8AAwAAAAAAAACZ+yAAAwAAAAEAAACZ+yEAAwAAAAI
 tile_set = SubResource("TileSet_bwjto")
 
 [node name="Player" parent="." unique_id=160871218 instance=ExtResource("1_u52ul")]
-position = Vector2(-17088, 449)
+position = Vector2(-16574, 448)
 safe_margin = 0.001
 
 [node name="Boss" parent="." unique_id=2105159246 instance=ExtResource("boss_scene")]
-position = Vector2(-16473, 403)
+position = Vector2(-15815, 411)
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=1986929114]
 
@@ -889,15 +889,15 @@ horizontal_alignment = 1
 layout_mode = 2
 text = "Restart"
 
-[node name="LeftWall" type="StaticBody2D" parent="." unique_id=830435602]
+[node name="Walls" type="StaticBody2D" parent="." unique_id=830435602]
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="LeftWall" unique_id=259605380]
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Walls" unique_id=259605380]
 visible = false
-position = Vector2(-18002, -1110)
+position = Vector2(-17842, -1088)
 rotation = 1.5707964
 shape = SubResource("RectangleShape2D_6mx2d")
 
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="LeftWall" unique_id=1605529509]
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="Walls" unique_id=1605529509]
 visible = false
 position = Vector2(-14823, -1112)
 rotation = 1.5707964
