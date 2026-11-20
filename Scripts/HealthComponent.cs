@@ -1,44 +1,58 @@
-using System;
+#nullable enable
 using Godot;
 
 public partial class HealthComponent : Node
 {
-    [Signal] public delegate void HealthChangedEventHandler(int currentHealth, int maximumHealth);
-    [Signal] public delegate void DiedEventHandler();
+    [Signal]
+    public delegate void HealthChangedEventHandler(int currentHealth, int maximumHealth);
 
-    [Export] public int MaxHealth { get; set; } = 5;
-    [Export] public double InvulnerabilityDuration { get; set; } = 0.75;
+    [Signal]
+    public delegate void DiedEventHandler();
 
-    public int CurrentHealth { get; private set; }
-    public bool IsDead { get; private set; }
-    private double _invulnerabilityRemaining;
+    [Export]
+    public int MaxHealth { get; set; } = 10;
+
+    private HealthLogic? _logic;
+
+    private HealthLogic Logic => _logic ??= CreateLogic();
+
+    public int CurrentHealth => Logic.CurrentHealth;
+    public bool IsDead => Logic.IsDead;
 
     public override void _Ready()
     {
-        if (MaxHealth <= 0) throw new InvalidOperationException($"{nameof(MaxHealth)} must be greater than zero.");
-        CurrentHealth = MaxHealth;
-        EmitSignal(SignalName.HealthChanged, CurrentHealth, MaxHealth);
+        _ = Logic;
     }
 
-    public override void _Process(double delta)
+    public void TakeDamage(int amount)
     {
-        _invulnerabilityRemaining = Math.Max(0.0, _invulnerabilityRemaining - delta);
+        Logic.TakeDamage(amount);
     }
 
-    public bool TakeDamage(int amount)
+    private HealthLogic CreateLogic()
     {
-        if (amount <= 0) throw new ArgumentOutOfRangeException(nameof(amount), "Damage must be greater than zero.");
-        if (IsDead || _invulnerabilityRemaining > 0.0) return false;
+        HealthLogic logic = new(MaxHealth);
+        logic.HealthChanged += OnHealthChanged;
+        logic.Died += OnDied;
+        return logic;
+    }
 
-        CurrentHealth = Math.Max(0, CurrentHealth - amount);
-        _invulnerabilityRemaining = Math.Max(0.0, InvulnerabilityDuration);
-        EmitSignal(SignalName.HealthChanged, CurrentHealth, MaxHealth);
+    private void OnHealthChanged(int currentHealth, int maxHealth)
+    {
+        EmitSignal(SignalName.HealthChanged, currentHealth, maxHealth);
+    }
 
-        if (CurrentHealth == 0)
+    private void OnDied()
+    {
+        EmitSignal(SignalName.Died);
+    }
+
+    public override void _ExitTree()
+    {
+        if (_logic is not null)
         {
-            IsDead = true;
-            EmitSignal(SignalName.Died);
+            _logic.HealthChanged -= OnHealthChanged;
+            _logic.Died -= OnDied;
         }
-        return true;
     }
 }
